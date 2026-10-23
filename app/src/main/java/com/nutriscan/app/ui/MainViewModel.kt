@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nutriscan.app.NutriApp
 import com.nutriscan.app.data.AiModel
+import com.nutriscan.app.data.AiProvider
 import com.nutriscan.app.data.AppSettings
 import com.nutriscan.app.data.MealEntity
 import com.nutriscan.app.domain.Profile
@@ -43,7 +44,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun saveProfile(profile: Profile) = viewModelScope.launch { nutri.settings.setProfile(profile) }
 
-    fun saveApiKey(key: String) = viewModelScope.launch { nutri.settings.setApiKey(key) }
+    fun saveApiKey(provider: AiProvider, key: String) = viewModelScope.launch { nutri.settings.setApiKey(provider, key) }
+
+    fun saveProvider(provider: AiProvider) = viewModelScope.launch { nutri.settings.setProvider(provider) }
 
     fun saveModel(model: AiModel) = viewModelScope.launch { nutri.settings.setModel(model) }
 

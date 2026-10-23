@@ -1,7 +1,7 @@
 package com.nutriscan.app
 
 import com.nutriscan.app.ai.AnalysisException
-import com.nutriscan.app.ai.FoodAnalyzer
+import com.nutriscan.app.ai.ClaudeAnalyzer
 import com.nutriscan.app.data.AiModel
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -16,7 +16,7 @@ import org.junit.Before
 import org.junit.Test
 
 /** Comprueba la petición que se envía a Claude y cómo se interpreta la respuesta, con un servidor falso local. */
-class FoodAnalyzerTest {
+class ClaudeAnalyzerTest {
     private lateinit var server: MockWebServer
     private var status = 200
     private var responseBody = ""
@@ -48,7 +48,7 @@ class FoodAnalyzerTest {
     @After
     fun stop() = server.shutdown()
 
-    private fun analyzer() = FoodAnalyzer(baseUrl = server.url("/").toString().trimEnd('/'))
+    private fun analyzer() = ClaudeAnalyzer(baseUrl = server.url("/").toString().trimEnd('/'))
 
     private fun message(text: String, stopReason: String = "end_turn") = JSONObject()
         .put("id", "msg_test")

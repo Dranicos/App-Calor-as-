@@ -90,7 +90,7 @@ class ReviewViewModel(app: Application, handle: SavedStateHandle) : AndroidViewM
             try {
                 val settings = nutri.settings.settings.first()
                 val jpeg = withContext(Dispatchers.IO) { nutri.photos.compressedJpeg(file, maxSide = 1568) }
-                val result = nutri.analyzer.analyze(settings.apiKey, settings.model, jpeg, hint)
+                val result = nutri.analyzer.analyze(settings, jpeg, hint)
                 if (!result.isFood) {
                     status = AnalysisStatus.Error(
                         "No parece que haya comida en la foto. Puedes añadir los ingredientes a mano o probar otra foto."

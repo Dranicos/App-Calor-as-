@@ -13,8 +13,8 @@ android {
         applicationId = "com.nutriscan.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     signingConfigs {
@@ -102,6 +102,9 @@ dependencies {
 
     // SDK oficial de Claude (Anthropic) para analizar las fotos.
     implementation("com.anthropic:anthropic-java:3.2.0")
+
+    // Cliente HTTP para la API de Gemini (Google). Misma versión que usa el SDK de Anthropic.
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,12 +40,14 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nutriscan.app.data.AiModel
+import com.nutriscan.app.data.AiProvider
 import com.nutriscan.app.ui.MainViewModel
 
 @Composable
 fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
     val settings by vm.settings.collectAsStateWithLifecycle()
-    var key by rememberSaveable { mutableStateOf("") }
+    var claudeKey by rememberSaveable { mutableStateOf("") }
+    var geminiKey by rememberSaveable { mutableStateOf("") }
     var loaded by rememberSaveable { mutableStateOf(false) }
     var showKey by rememberSaveable { mutableStateOf(false) }
     var confirmWipe by rememberSaveable { mutableStateOf(false) }
@@ -52,8 +55,12 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
 
     LaunchedEffect(settings) {
         val s = settings
-        if (s != null && !loaded) { key = s.apiKey; loaded = true }
+        if (s != null && !loaded) { claudeKey = s.apiKey; geminiKey = s.geminiKey; loaded = true }
     }
+
+    val provider = settings?.provider ?: AiProvider.CLAUDE
+    val key = if (provider == AiProvider.GEMINI) geminiKey else claudeKey
+    val savedKey = settings?.keyFor(provider).orEmpty()
 
     Column(
         Modifier
@@ -70,15 +77,33 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
 
         Text("Inteligencia artificial", style = MaterialTheme.typography.titleMedium)
         Text(
-            "El análisis de fotos usa Claude, de Anthropic. Crea una API key en console.anthropic.com y pégala aquí. Se guarda solo en este móvil.",
+            "Elige qué IA analiza tus fotos. Puedes guardar una API key para cada una y cambiar cuando quieras.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            AiProvider.entries.forEach { p ->
+                FilterChip(
+                    selected = provider == p,
+                    onClick = { vm.saveProvider(p) },
+                    label = { Text("${p.label} (${p.company})") },
+                )
+            }
+        }
+        Text(
+            when (provider) {
+                AiProvider.CLAUDE -> "Crea una API key en console.anthropic.com (necesita saldo en la cuenta) y pégala aquí."
+                AiProvider.GEMINI -> "Crea una API key gratis en Google AI Studio con tu cuenta de Google y pégala aquí. " +
+                    "Gemini Flash tiene un nivel gratuito con un límite de usos por minuto y por día."
+            } + " Se guarda solo en este móvil.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         OutlinedTextField(
             value = key,
-            onValueChange = { key = it },
-            label = { Text("API key de Anthropic") },
-            placeholder = { Text("sk-ant-…") },
+            onValueChange = { if (provider == AiProvider.GEMINI) geminiKey = it else claudeKey = it },
+            label = { Text("API key de ${provider.label}") },
+            placeholder = { Text(provider.keyHint) },
             singleLine = true,
             visualTransformation = if (showKey) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -90,17 +115,17 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
             modifier = Modifier.fillMaxWidth(),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { vm.saveApiKey(key) }, enabled = key.trim() != settings?.apiKey) {
-                Text(if (key.trim() == settings?.apiKey && key.isNotBlank()) "Guardada ✓" else "Guardar")
+            Button(onClick = { vm.saveApiKey(provider, key) }, enabled = key.trim() != savedKey) {
+                Text(if (key.trim() == savedKey && key.isNotBlank()) "Guardada ✓" else "Guardar")
             }
-            OutlinedButton(onClick = { uri.openUri("https://console.anthropic.com/settings/keys") }) {
+            OutlinedButton(onClick = { uri.openUri(provider.keyUrl) }) {
                 Text("Conseguir API key")
             }
         }
 
         Text("Modelo", style = MaterialTheme.typography.titleMedium)
         Card(Modifier.fillMaxWidth()) {
-            AiModel.entries.forEach { m ->
+            AiModel.forProvider(provider).forEach { m ->
                 Row(
                     Modifier
                         .fillMaxWidth()
@@ -120,7 +145,7 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
         Text("Privacidad y datos", style = MaterialTheme.typography.titleMedium)
         Text(
             "Tu diario, tu perfil y tus fotos se guardan únicamente en este dispositivo. " +
-                "Al escanear, la foto se envía a Anthropic solo para analizarla.",
+                "Al escanear, la foto se envía a la IA que elijas (Anthropic o Google) solo para analizarla.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -133,9 +158,9 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
     if (confirmWipe) {
         ConfirmDialog(
             title = "¿Borrar todo?",
-            text = "Se eliminarán tu diario, tus fotos, tu plan y la API key. No se puede deshacer.",
+            text = "Se eliminarán tu diario, tus fotos, tu plan y las API keys. No se puede deshacer.",
             confirm = "Borrar todo",
-            onConfirm = { vm.deleteAllData(); key = ""; confirmWipe = false },
+            onConfirm = { vm.deleteAllData(); claudeKey = ""; geminiKey = ""; confirmWipe = false },
             onDismiss = { confirmWipe = false },
         )
     }
