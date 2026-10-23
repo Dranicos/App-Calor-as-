@@ -1,6 +1,6 @@
 # NutriScan · Contador de calorías con IA para Android
 
-Haz una foto a tu plato o a un producto y la app estima las **calorías y macronutrientes** (proteína, carbohidratos y grasas) de cada ingrediente usando **Claude** (la IA de Anthropic). Después puedes corregir lo que haga falta y guardarlo en tu diario. Además, calcula **cuánto deberías comer** según tu peso, altura, edad, actividad y objetivo.
+Haz una foto a tu plato o a un producto y la app estima las **calorías y macronutrientes** (proteína, carbohidratos y grasas) de cada ingrediente usando IA: **Claude** (Anthropic) o **Gemini** (Google), la que prefieras. Después puedes corregir lo que haga falta y guardarlo en tu diario. Además, calcula **cuánto deberías comer** según tu peso, altura, edad, actividad y objetivo.
 
 Todos tus datos (diario, fotos, plan y API key) se guardan **solo en tu móvil**.
 
@@ -15,7 +15,7 @@ Todos tus datos (diario, fotos, plan y API key) se guardan **solo en tu móvil**
 - **Añadir a mano**, sin foto.
 - **Plan nutricional**: calorías diarias y gramos de proteína, carbohidratos y grasas con la fórmula de Mifflin-St Jeor, además de metabolismo basal, gasto diario, IMC y agua recomendada.
 - **Diario de hoy** con anillo de calorías y barras de macros, e **historial** por días.
-- **Privacidad**: base de datos local (Room), sin cuentas ni servidores propios. La foto solo sale del móvil para analizarla en la API de Anthropic.
+- **Privacidad**: base de datos local (Room), sin cuentas ni servidores propios. La foto solo sale del móvil para analizarla en la API de la IA elegida (Anthropic o Google).
 
 ## Instalarla en tu Android
 
@@ -27,16 +27,26 @@ Cada cambio en la rama `main` vuelve a compilar el APK automáticamente (GitHub 
 
 ## Configurar la IA
 
+En **Ajustes → Inteligencia artificial** elige qué IA usar. Puedes guardar una API key de cada una y cambiar cuando quieras.
+
+**Opción gratuita: Gemini (Google)**
+1. Entra en [Google AI Studio](https://aistudio.google.com/apikey) con tu cuenta de Google y pulsa «Create API key».
+2. En la app: **Ajustes → Gemini (Google)**, pega la key y pulsa **Guardar**.
+3. Modelos: **Gemini 3.8 Flash** (recomendado, con nivel gratuito), **Gemini 4 Argon** (el más potente, solo de pago) o **Gemini 3.5 Flash-Lite** (el más barato, con nivel gratuito). El nivel gratuito tiene un límite de usos por minuto y por día.
+
+**Claude (Anthropic)**
 1. Crea una API key en [console.anthropic.com](https://console.anthropic.com/settings/keys) (necesita saldo en la cuenta: cada foto cuesta unos 2–4 céntimos con Opus y bastante menos con Haiku).
-2. En la app: **Ajustes → API key de Anthropic → Guardar**.
-3. Elige el modelo: **Claude Opus 5.5** (el más preciso, por defecto), **Sonnet 5.5** (equilibrado) o **Haiku 5.5** (el más rápido y barato).
+2. En la app: **Ajustes → Claude (Anthropic)**, pega la key y pulsa **Guardar**.
+3. Modelos: **Claude Opus 5.5** (el más preciso), **Sonnet 5.5** (equilibrado) o **Haiku 5.5** (el más rápido y barato).
 
 ## Detalles técnicos
 
 - Kotlin + Jetpack Compose (Material 3), Room, DataStore. `minSdk 26`, `targetSdk 36`.
 - Análisis con el [SDK oficial de Claude para Java](https://github.com/anthropics/anthropic-sdk-java) (v3): imagen en base64 + **salida estructurada** con un esquema JSON (`output_config.format`), esfuerzo `medium` y, en Opus y Sonnet, `fallbacks: "default"` para que la API reintente automáticamente con otro modelo si su filtro de seguridad rechazara una foto.
+- Gemini se llama con la API REST `generateContent` (`responseMimeType: application/json` + `responseSchema`), reintentando automáticamente si el servidor está saturado.
 - Código principal:
-  - `app/src/main/java/com/nutriscan/app/ai/FoodAnalyzer.kt` — llamada a Claude y prompt.
+  - `app/src/main/java/com/nutriscan/app/ai/FoodPrompt.kt` — prompt y esquema comunes.
+  - `app/src/main/java/com/nutriscan/app/ai/ClaudeAnalyzer.kt` y `GeminiAnalyzer.kt` — llamada a cada IA.
   - `app/src/main/java/com/nutriscan/app/domain/NutritionPlan.kt` — cálculo del plan.
   - `app/src/main/java/com/nutriscan/app/ui/screens/` — pantallas.
 

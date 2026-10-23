@@ -46,7 +46,7 @@ class ScreenshotTest {
 
     private fun seed(): Long = runBlocking {
         app.settings.setProfile(Profile(Sex.HOMBRE, 30, 78.0, 178.0, Activity.MODERADO, Goal.PERDER))
-        app.settings.setApiKey("sk-ant-demo")
+        app.settings.setApiKey(com.nutriscan.app.data.AiProvider.CLAUDE, "sk-ant-demo")
         val dao = app.database.meals()
         val today = LocalDate.now().toString()
         fun meal(type: MealType, name: String, ings: List<Ingredient>): MealEntity {
@@ -107,6 +107,10 @@ class ScreenshotTest {
     @Test
     fun settings() {
         seed()
+        runBlocking {
+            app.settings.setProvider(com.nutriscan.app.data.AiProvider.GEMINI)
+            app.settings.setApiKey(com.nutriscan.app.data.AiProvider.GEMINI, "AIza-demo")
+        }
         val vm = MainViewModel(app)
         compose.setContent { NutriScanTheme { Surface { SettingsScreen(vm, PaddingValues()) } } }
         Thread.sleep(500)

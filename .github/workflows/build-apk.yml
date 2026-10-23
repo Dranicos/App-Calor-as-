@@ -23,7 +23,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Tests
-        run: ./gradlew testDebugUnitTest --tests '*NutritionPlanTest*' --tests '*FoodAnalyzerTest*'
+        run: ./gradlew testDebugUnitTest --tests '*NutritionPlanTest*' --tests '*ClaudeAnalyzerTest*' --tests '*GeminiAnalyzerTest*'
 
       - name: Compilar APK
         run: ./gradlew assembleRelease

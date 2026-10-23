@@ -77,11 +77,11 @@ fun HomeScreen(
         }
 
         val s = settings
-        if (s != null && s.apiKey.isBlank()) {
+        if (s != null && !s.hasActiveKey) {
             item {
                 HintCard(
                     icon = Icons.Outlined.Key,
-                    text = "Para escanear fotos necesitas una API key de Anthropic (Claude).",
+                    text = "Para escanear fotos necesitas una API key de ${s.provider.company} (${s.provider.label}).",
                     action = "Configurar",
                     onClick = onGoToSettings,
                 )
