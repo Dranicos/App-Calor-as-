@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Manzana -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,40 C47,34 34,35 33,49 C32,62 41,76 48,76 C51,76 52,74 54,74 C56,74 57,76 60,76 C67,76 76,62 75,49 C74,35 61,34 54,40 Z" />
+    <!-- Hoja -->
+    <path
+        android:fillColor="#C8E6C9"
+        android:pathData="M55,38 C55,31 60,27 67,27 C67,34 62,38 55,38 Z" />
+    <!-- Rabito -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M53,40 L52.5,32 L55,32 L55.5,40 Z" />
+</vector>
